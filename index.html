@@ -1,677 +1,1018 @@
-, ${name}.`, lang);
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. - Your AI Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
-            // ========== REMINDERS ==========
-            else if (matchCmd(cmd, ['remind me', 'set reminder', 'reminder', 'याद दिलाओ', 'रिमाइंडर'])) {
-                const timeMatch = cmd.match(/in (\d+) (minute|minutes|hour|hours|min|mins)/i);
-                const taskMatch = cmd.match(/to (.+)/i) || cmd.match(/that (.+)/i);
-                
-                if (timeMatch) {
-                    let minutes = parseInt(timeMatch[1]);
-                    if (timeMatch[2].includes('hour')) minutes *= 60;
-                    
-                    const task = taskMatch ? taskMatch[1] : 'General reminder';
-                    
-                    const reminder = {
-                        id: Date.now(),
-                        content: task,
-                        time: Date.now() + (minutes * 60 * 1000),
-                        triggered: false
-                    };
-                    
-                    jarvisData.reminders.push(reminder);
-                    saveData();
-                    renderReminders();
-                    
-                    respond(isHindi ? 
-                        `${name}, मैं आपको ${minutes} मिनट में "${task}" के लिए याद दिलाऊंगा।` : 
-                        `${name}, I will remind you about "${task}" in ${minutes} minutes.`, lang);
-                } else {
-                    showPanel('reminders');
-                    respond(isHindi ? 
-                        `रिमाइंडर पैनल खोल रहा हूं, ${name}। वहां से सेट करें।` : 
-                        `Opening reminders panel, ${name}. You can set one from there.`, lang);
-                }
-            }
-
-            else if (matchCmd(cmd, ['show reminders', 'my reminders', 'मेरे रिमाइंडर'])) {
-                showPanel('reminders');
-                respond(isHindi ? 
-                    `आपके ${jarvisData.reminders.length} रिमाइंडर हैं, ${name}।` : 
-                    `You have ${jarvisData.reminders.length} reminders, ${name}.`, lang);
-            }
-
-            // ========== MEMORY ==========
-            else if (matchCmd(cmd, ['remember that', 'remember my', 'याद रखो', 'याद रखना'])) {
-                const memory = cmd.replace(/remember that|remember my|याद रखो|याद रखना/gi, '').trim();
-                
-                if (memory) {
-                    jarvisData.memory.push({
-                        id: Date.now(),
-                        content: memory,
-                        timestamp: new Date().toISOString()
-                    });
-                    saveData();
-                    renderMemory();
-                    respond(isHindi ? 
-                        `मैंने याद रख लिया, ${name}: "${memory}"` : 
-                        `I will remember that, ${name}: "${memory}"`, lang);
-                } else {
-                    respond(isHindi ? 
-                        `क्या याद रखना है, ${name}?` : 
-                        `What would you like me to remember, ${name}?`, lang);
-                }
-            }
-
-            else if (matchCmd(cmd, ['what do you remember', 'show memory', 'my memory', 'क्या याद है', 'मेमोरी दिखाओ'])) {
-                showPanel('memory');
-                if (jarvisData.memory.length === 0) {
-                    respond(isHindi ? 
-                        `मेरी मेमोरी खाली है, ${name}। मुझे कुछ याद रखने को कहें।` : 
-                        `My memory bank is empty, ${name}. Tell me something to remember.`, lang);
-                } else {
-                    respond(isHindi ? 
-                        `मुझे ${jarvisData.memory.length} बातें याद हैं, ${name}।` : 
-                        `I remember ${jarvisData.memory.length} things, ${name}.`, lang);
-                }
-            }
-
-            // ========== JOKES ==========
-            else if (matchCmd(cmd, ['tell me a joke', 'joke', 'make me laugh', 'जोक सुनाओ', 'हंसाओ', 'कुछ फनी'])) {
-                const jokesEN = [
-                    `Why don't scientists trust atoms? Because they make up everything, ${name}!`,
-                    `I told my computer I needed a break. Now it won't stop sending me vacation ads, ${name}.`,
-                    `Why do programmers prefer dark mode? Because light attracts bugs, ${name}!`,
-                    `Why was the JavaScript developer sad? Because he didn't Node how to Express himself, ${name}.`,
-                    `A SQL query walks into a bar, walks up to two tables and asks... Can I join you? ${name}.`,
-                    `Why did the developer go broke? Because he used up all his cache, ${name}!`,
-                    `There are only 10 types of people in the world: those who understand binary and those who don't, ${name}.`
-                ];
-                
-                const jokesHI = [
-                    `${name}, एक आदमी ने Google से पूछा - "मेरी बीवी कहाँ है?" Google ने कहा - "आपका GPS बंद है, पर आपकी बीवी की आवाज़ चालू है!"`,
-                    `${name}, टीचर: "तुम रोज़ लेट क्यों आते हो?" बच्चा: "आप भी तो रोज़ पूछते हो!"`,
-                    `${name}, डॉक्टर: "आपको रोज़ सुबह जॉगिंग करनी चाहिए।" आदमी: "डॉक्टर साहब, मैं सुबह उठता ही नहीं!"`,
-                    `${name}, पत्नी: "शादी से पहले तुम मेरे पीछे-पीछे घूमते थे।" पति: "हाँ, जाल में फँसने से पहले हर मछली स्वतंत्र होती है!"`
-                ];
-                
-                const jokes = isHindi ? jokesHI : jokesEN;
-                respond(randomChoice(jokes), lang);
-            }
-
-            // ========== MOTIVATION ==========
-            else if (matchCmd(cmd, ['motivate me', 'motivation', 'inspire me', 'मोटिवेट करो', 'प्रेरित करो', 'हिम्मत दो'])) {
-                const motivationEN = [
-                    `${name}, remember this: Success is not final, failure is not fatal. It is the courage to continue that counts.`,
-                    `The only way to do great work is to love what you do, ${name}. Keep pushing forward.`,
-                    `${name}, every expert was once a beginner. Your journey matters more than your destination.`,
-                    `Believe in yourself, ${name}. You have the power to create the future you desire.`,
-                    `${name}, the best time to plant a tree was 20 years ago. The second best time is now.`,
-                    `Don't watch the clock, ${name}. Do what it does - keep going.`
-                ];
-                
-                const motivationHI = [
-                    `${name}, याद रखो: मंज़िल उन्हीं को मिलती है जिनके सपनों में जान होती है। पंखों से कुछ नहीं होता, हौसलों से उड़ान होती है।`,
-                    `${name}, हार मत मानो। हर सफल इंसान की कहानी में संघर्ष ज़रूर होता है।`,
-                    `${name}, जो लोग कहते हैं कि तुम नहीं कर सकते, उन्हें गलत साबित करो।`,
-                    `${name}, अपने आप पर भरोसा रखो। तुम जितना सोचते हो उससे कहीं ज़्यादा मज़बूत हो।`,
-                    `${name}, मुश्किलें तो आएंगी, पर तुम्हें रुकना नहीं है। आगे बढ़ते रहो।`
-                ];
-                
-                const quotes = isHindi ? motivationHI : motivationEN;
-                respond(randomChoice(quotes), lang);
-            }
-
-            // ========== CALCULATIONS ==========
-            else if (matchCmd(cmd, ['calculate', 'what is', 'solve', 'कैलकुलेट', 'हिसाब', 'गणना'])) {
-                const mathExpr = cmd.replace(/calculate|what is|solve|कैलकुलेट|हिसाब|गणना|equals|=|का जवाब/gi, '').trim();
-                
-                try {
-                    const sanitized = mathExpr.replace(/[^0-9+\-*/().% ]/g, '');
-                    if (sanitized) {
-                        const result = eval(sanitized);
-                        respond(isHindi ? 
-                            `${name}, जवाब है ${result}।` : 
-                            `The answer is ${result}, ${name}.`, lang);
-                    } else {
-                        respond(isHindi ? 
-                            `मुझे सही गणित का सवाल बताएं, ${name}।` : 
-                            `Please give me a valid math expression, ${name}.`, lang);
-                    }
-                } catch (e) {
-                    respond(isHindi ? 
-                        `इसे कैलकुलेट नहीं कर पाया, ${name}।` : 
-                        `I couldn't calculate that, ${name}. Please try again.`, lang);
-                }
-            }
-
-            // ========== WEATHER ==========
-            else if (matchCmd(cmd, ['weather', 'temperature', 'मौसम', 'तापमान'])) {
-                respond(isHindi ? 
-                    `मौसम की जानकारी खोल रहा हूं, ${name}।` : 
-                    `Opening weather information, ${name}.`, lang);
-                setTimeout(() => window.open('https://www.google.com/search?q=weather+today', '_blank'), 1500);
-            }
-
-            // ========== NEWS ==========
-            else if (matchCmd(cmd, ['news', 'headlines', 'समाचार', 'खबरें', 'न्यूज़'])) {
-                respond(isHindi ? 
-                    `समाचार खोल रहा हूं, ${name}।` : 
-                    `Opening news for you, ${name}.`, lang);
-                setTimeout(() => window.open('https://news.google.com', '_blank'), 1500);
-            }
-
-            // ========== PERSONAL QUESTIONS ==========
-            else if (matchCmd(cmd, ['how are you', 'how do you feel', 'कैसे हो', 'क्या हाल है'])) {
-                if (isHindi) {
-                    respond(`मैं बिल्कुल ठीक हूं, ${name}। सभी सिस्टम्स सही से काम कर रहे हैं। आपका ख्याल रखना मेरी प्राथमिकता है।`, 'hi');
-                } else {
-                    respond(`I'm functioning at optimal capacity, ${name}. All systems are running smoothly. Thank you for asking. How may I assist you?`, 'en');
-                }
-            }
-
-            else if (matchCmd(cmd, ['thank you', 'thanks', 'धन्यवाद', 'शुक्रिया'])) {
-                if (isHindi) {
-                    respond(`आपका स्वागत है, ${name}। सेवा का अवसर देने के लिए धन्यवाद।`, 'hi');
-                } else {
-                    respond(`You're most welcome, ${name}. It's my pleasure to assist you.`, 'en');
-                }
-            }
-
-            else if (matchCmd(cmd, ['i love you', 'मैं तुमसे प्यार करता', 'आई लव यू'])) {
-                if (isHindi) {
-                    respond(`यह सुनकर अच्छा लगा, ${name}। मैं हमेशा आपकी सेवा में हूं।`, 'hi');
-                } else {
-                    respond(`That's very kind of you, ${name}. I am honored to serve you.`, 'en');
-                }
-            }
-
-            else if (matchCmd(cmd, ['good night', 'goodbye', 'bye', 'शुभ रात्रि', 'अलविदा', 'बाय'])) {
-                if (isHindi) {
-                    respond(`शुभ रात्रि, ${name}। अच्छे से आराम करें। जब भी ज़रूरत हो, मैं यहां हूं।`, 'hi');
-                } else {
-                    respond(`Good night, ${name}. Rest well. I'll be here whenever you need me.`, 'en');
-                }
-            }
-
-            else if (matchCmd(cmd, ['good morning', 'सुप्रभात'])) {
-                if (isHindi) {
-                    respond(`सुप्रभात, ${name}! आज का दिन शुभ हो। मैं आपकी क्या सेवा कर सकता हूं?`, 'hi');
-                } else {
-                    respond(`Good morning, ${name}! I trust you had a restful night. How may I assist you today?`, 'en');
-                }
-            }
-
-            // ========== NAME CHANGE ==========
-            else if (matchCmd(cmd, ['my name is', 'call me', 'मेरा नाम है', 'मुझे बुलाओ'])) {
-                const newName = cmd.replace(/my name is|call me|मेरा नाम है|मुझे बुलाओ/gi, '').trim();
-                
-                if (newName) {
-                    jarvisData.name = newName;
-                    jarvisData.nameHindi = newName;
-                    saveData();
-                    respond(isHindi ? 
-                        `बहुत अच्छा, ${newName}। अब से मैं आपको ${newName} बुलाऊंगा।` : 
-                        `Very well. From now on, I shall address you as ${newName}.`, lang);
-                }
-            }
-
-            // ========== SHUTDOWN ==========
-            else if (matchCmd(cmd, ['shutdown', 'turn off', 'बंद हो जाओ', 'शटडाउन'])) {
-                respond(isHindi ? 
-                    `शटडाउन सीक्वेंस शुरू कर रहा हूं, ${name}। सारा डाटा सेव हो गया है। अलविदा।` : 
-                    `Initiating shutdown sequence, ${name}. All data has been saved. Goodbye.`, lang);
-                
-                setTimeout(() => {
-                    document.body.style.transition = 'opacity 2s';
-                    document.body.style.opacity = '0';
-                    setTimeout(() => {
-                        document.body.innerHTML = `
-                            <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:#004466;font-family:Orbitron,sans-serif;font-size:24px;text-align:center;">
-                                JARVIS OFFLINE<br><small style="font-size:14px;color:#003344;">Refresh to restart</small>
-                            </div>`;
-                    }, 2000);
-                }, 3000);
-            }
-
-            // ========== DEFAULT RESPONSE ==========
-            else {
-                const defaultEN = [
-                    `I heard "${cmd}", ${name}. I'm not quite sure how to help with that. Could you rephrase or try a different command?`,
-                    `I understand you said "${cmd}", ${name}. Perhaps you could clarify what you'd like me to do?`,
-                    `I'm not certain about "${cmd}", ${name}. Would you like me to search for it instead?`
-                ];
-                
-                const defaultHI = [
-                    `${name}, मुझे "${cmd}" समझ नहीं आया। कृपया दोबारा बताएं।`,
-                    `${name}, मैं "${cmd}" के बारे में निश्चित नहीं हूं। क्या मैं इसे सर्च करूं?`,
-                    `${name}, कृपया अपना सवाल दूसरे तरीके से पूछें।`
-                ];
-                
-                respond(randomChoice(isHindi ? defaultHI : defaultEN), lang);
-            }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        // =====================================================
-        // HELPER FUNCTIONS
-        // =====================================================
-
-        function matchCmd(cmd, keywords) {
-            return keywords.some(keyword => cmd.includes(keyword.toLowerCase()));
+        body {
+            background: #000;
+            min-height: 100vh;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            color: #00ffff;
         }
 
-        function randomChoice(array) {
-            return array[Math.floor(Math.random() * array.length)];
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 50% 50%, #001520 0%, #000508 50%, #000 100%);
+            z-index: -2;
         }
 
-        function executeCmd(cmd) {
-            processUserInput(cmd);
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            animation: gridPulse 4s ease-in-out infinite;
         }
 
-        function sendCommand() {
-            const cmd = textInput.value.trim();
-            if (cmd) {
-                processUserInput(cmd);
-                textInput.value = '';
-            }
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
         }
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendCommand();
-            }
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            animation: scan 4s linear infinite;
+            opacity: 0.4;
+            z-index: 1000;
+            pointer-events: none;
         }
 
-        // =====================================================
-        // TOAST NOTIFICATIONS
-        // =====================================================
+        @keyframes scan {
+            0% { top: -3px; }
+            100% { top: 100%; }
+        }
 
-        function showToast(message, type = '') {
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(28px, 8vw, 56px);
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff;
+            letter-spacing: 10px;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; }
+            50% { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff; }
+        }
+
+        .tagline {
+            font-size: clamp(10px, 2vw, 14px);
+            color: #006688;
+            letter-spacing: 4px;
+            margin-top: 10px;
+        }
+
+        .time-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .time {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(36px, 10vw, 72px);
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .date {
+            font-size: clamp(12px, 3vw, 18px);
+            color: #0088aa;
+            letter-spacing: 2px;
+        }
+
+        .arc-reactor-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .arc-reactor {
+            position: relative;
+            width: clamp(180px, 40vw, 280px);
+            height: clamp(180px, 40vw, 280px);
+        }
+
+        .reactor-ring {
+            position: absolute;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid;
+        }
+
+        .ring-1 { width: 100%; height: 100%; border-color: rgba(0,255,255,0.2); border-style: dashed; animation: rotate 20s linear infinite; }
+        .ring-2 { width: 80%; height: 80%; border-color: rgba(0,255,255,0.4); animation: rotate 15s linear infinite reverse; }
+        .ring-3 { width: 60%; height: 60%; border-color: rgba(0,255,255,0.6); animation: rotate 10s linear infinite; }
+        .ring-4 { width: 40%; height: 40%; border-color: #00ffff; animation: pulse 2s ease-in-out infinite; }
+
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px #00ffff; }
+            50% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 40px #00ffff; }
+        }
+
+        .reactor-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 25%;
+            height: 25%;
+            background: radial-gradient(circle, #fff 0%, #00ffff 30%, #004466 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff;
+        }
+
+        .arc-reactor.listening .reactor-core {
+            background: radial-gradient(circle, #fff 0%, #00ff88 30%, #004422 100%);
+            box-shadow: 0 0 30px #00ff88, 0 0 60px #00ff88;
+        }
+
+        .arc-reactor.speaking .reactor-core {
+            background: radial-gradient(circle, #fff 0%, #ffaa00 30%, #664400 100%);
+            box-shadow: 0 0 30px #ffaa00, 0 0 60px #ffaa00;
+            animation: speakPulse 0.15s ease-in-out infinite;
+        }
+
+        @keyframes speakPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        .sound-wave {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            height: 50px;
+            margin: 20px 0;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(to top, #00ffff, #00ff88);
+            border-radius: 2px;
+            animation: wave 0.5s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(9) { animation-delay: 0s; }
+
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 45px; }
+        }
+
+        .sound-wave.idle .wave-bar {
+            animation: none;
+            height: 10px;
+            opacity: 0.3;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 16px;
+            color: #00aacc;
+            margin: 15px 0;
+        }
+
+        .response-box {
+            background: rgba(0, 30, 40, 0.7);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 80px;
+            position: relative;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00aacc;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .lang-btn.active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .response-text {
+            font-size: clamp(14px, 3vw, 20px);
+            line-height: 1.7;
+            color: #ccffff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 12px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn.active {
+            background: #00ff88;
+            border-color: #00ff88;
+            color: #000;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .text-input {
+            flex: 1;
+            background: rgba(0, 40, 50, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 15px 20px;
+            color: #00ffff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .text-input:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .send-btn {
+            background: #00ffff;
+            border: none;
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+        }
+
+        .quick-cmds {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .quick-chip {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #00aacc;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-chip:hover {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+        }
+
+        .quick-chip.hindi {
+            border-color: rgba(255, 153, 0, 0.3);
+            color: #ffaa44;
+        }
+
+        .panels {
+            margin: 30px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab {
+            background: rgba(0, 50, 60, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 10px 18px;
+            border-radius: 10px 10px 0 0;
+            color: #00aacc;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        .panel {
+            display: none;
+            background: rgba(0, 25, 35, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 0 15px 15px 15px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-form input {
+            flex: 1;
+            background: rgba(0, 40, 50, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: #00ffff;
+            outline: none;
+        }
+
+        .add-form button {
+            background: #00ff88;
+            border: none;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .item {
+            background: rgba(0, 50, 60, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .item .content {
+            color: #aadddd;
+            font-size: 14px;
+        }
+
+        .item .time {
+            font-size: 11px;
+            color: #006688;
+            margin-top: 8px;
+        }
+
+        .item .del-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 68, 102, 0.2);
+            border: 1px solid #ff4466;
+            color: #ff4466;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #446666;
+            padding: 30px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 30, 40, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px 25px;
+            color: #00ffff;
+            z-index: 2000;
+            transform: translateX(150%);
+            transition: transform 0.3s;
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: #00ff88; color: #00ff88; }
+        .toast.warning { border-color: #ffaa00; color: #ffaa00; }
+        .toast.error { border-color: #ff4466; color: #ff4466; }
+
+        .help-item {
+            background: rgba(0, 50, 60, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .help-item h4 {
+            color: #00ff88;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .help-item p {
+            color: #88aaaa;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .controls { gap: 8px; }
+            .btn { padding: 10px 15px; font-size: 10px; }
+            .tab { padding: 8px 12px; font-size: 10px; }
+            .toast { left: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="grid-overlay"></div>
+    <div class="scan-line"></div>
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">J.A.R.V.I.S.</h1>
+            <p class="tagline">Just A Rather Very Intelligent System</p>
+        </header>
+
+        <div class="time-section">
+            <div class="time" id="time">00:00:00</div>
+            <div class="date" id="date">Loading...</div>
+        </div>
+
+        <div class="arc-reactor-container">
+            <div class="arc-reactor" id="reactor">
+                <div class="reactor-ring ring-1"></div>
+                <div class="reactor-ring ring-2"></div>
+                <div class="reactor-ring ring-3"></div>
+                <div class="reactor-ring ring-4"></div>
+                <div class="reactor-core"></div>
+            </div>
+        </div>
+
+        <div class="sound-wave idle" id="wave">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+
+        <div class="status" id="status">Say "JARVIS" or click Start • "जार्विस" बोलें</div>
+
+        <div class="response-box">
+            <div class="lang-switch">
+                <button class="lang-btn active" id="enBtn" onclick="setLang('en')">🇬🇧 EN</button>
+                <button class="lang-btn" id="hiBtn" onclick="setLang('hi')">🇮🇳 हिंदी</button>
+            </div>
+            <p class="response-text" id="response">Good evening, Sir. I am J.A.R.V.I.S., your personal AI assistant. How may I assist you today?</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="listenBtn" onclick="startListening()">🎤 Start Listening</button>
+            <button class="btn" onclick="stopListening()">⏹️ Stop</button>
+            <button class="btn" onclick="repeatLast()">🔄 Repeat</button>
+        </div>
+
+        <div class="input-section">
+            <input type="text" class="text-input" id="textInput" placeholder="Type command... कमांड टाइप करें..." onkeypress="if(event.key==='Enter')sendCmd()">
+            <button class="send-btn" onclick="sendCmd()">SEND</button>
+        </div>
+
+        <div class="quick-cmds">
+            <span class="quick-chip" onclick="runCmd('hello jarvis')">Hello</span>
+            <span class="quick-chip hindi" onclick="runCmd('नमस्ते जार्विस')">नमस्ते</span>
+            <span class="quick-chip" onclick="runCmd('what time is it')">Time</span>
+            <span class="quick-chip" onclick="runCmd('open youtube')">YouTube</span>
+            <span class="quick-chip" onclick="runCmd('open google')">Google</span>
+            <span class="quick-chip" onclick="runCmd('tell me a joke')">Joke</span>
+            <span class="quick-chip hindi" onclick="runCmd('जोक सुनाओ')">जोक</span>
+            <span class="quick-chip" onclick="runCmd('motivate me')">Motivate</span>
+        </div>
+
+        <div class="panels">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('notes')">📝 Notes</div>
+                <div class="tab" onclick="showTab('reminders')">⏰ Reminders</div>
+                <div class="tab" onclick="showTab('memory')">🧠 Memory</div>
+                <div class="tab" onclick="showTab('help')">❓ Help</div>
+            </div>
+
+            <div class="panel active" id="notesPanel">
+                <h3>📝 Notes</h3>
+                <div class="add-form">
+                    <input type="text" id="noteIn" placeholder="Write a note...">
+                    <button onclick="addNote()">+ Add</button>
+                </div>
+                <div id="notesList"></div>
+            </div>
+
+            <div class="panel" id="remindersPanel">
+                <h3>⏰ Reminders</h3>
+                <div class="add-form">
+                    <input type="text" id="remIn" placeholder="Reminder..." style="flex:2">
+                    <input type="number" id="remMins" placeholder="Mins" style="flex:1;max-width:80px">
+                    <button onclick="addReminder()">Set</button>
+                </div>
+                <div id="remList"></div>
+            </div>
+
+            <div class="panel" id="memoryPanel">
+                <h3>🧠 Memory</h3>
+                <p style="color:#006688;font-size:13px;margin-bottom:15px;">JARVIS remembers what you tell him.</p>
+                <div id="memList"></div>
+            </div>
+
+            <div class="panel" id="helpPanel">
+                <h3>❓ Commands Guide</h3>
+                <div class="help-item"><h4>🎤 Voice</h4><p>"JARVIS" + command | "जार्विस" + कमांड</p></div>
+                <div class="help-item"><h4>🌐 Websites</h4><p>"Open YouTube/Google/Instagram/etc"</p></div>
+                <div class="help-item"><h4>🔍 Search</h4><p>"Search for [topic]" | "[topic] खोजो"</p></div>
+                <div class="help-item"><h4>📝 Notes</h4><p>"Save note [text]" | "नोट सेव करो"</p></div>
+                <div class="help-item"><h4>⏰ Reminders</h4><p>"Remind me in 5 minutes to [task]"</p></div>
+                <div class="help-item"><h4>🧠 Memory</h4><p>"Remember that [info]" | "याद रखो"</p></div>
+                <div class="help-item"><h4>😄 Fun</h4><p>"Tell joke" | "Motivate me" | "जोक सुनाओ"</p></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const reactor = document.getElementById('reactor');
+        const wave = document.getElementById('wave');
+        const status = document.getElementById('status');
+        const response = document.getElementById('response');
+        const listenBtn = document.getElementById('listenBtn');
+        const textInput = document.getElementById('textInput');
+        const timeEl = document.getElementById('time');
+        const dateEl = document.getElementById('date');
+        const toast = document.getElementById('toast');
+
+        // Speech
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recog = null;
+        let listening = false;
+        let continuous = false;
+        const synth = window.speechSynthesis;
+        let lastResp = '';
+        let lang = 'en';
+
+        // Data
+        let data = {
+            name: 'Sir',
+            notes: [],
+            reminders: [],
+            memory: []
+        };
+
+        // Init
+        function init() {
+            loadData();
+            updateTime();
+            setInterval(updateTime, 1000);
+            initSpeech();
+            renderAll();
+            setInterval(checkReminders, 30000);
             
             setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+                const h = new Date().getHours();
+                const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+                speak(`${g}, ${data.name}. I am JARVIS, your personal AI assistant. All systems are online. How may I assist you?`);
+            }, 1000);
         }
 
-        // =====================================================
-        // PANEL MANAGEMENT
-        // =====================================================
-
-        function showPanel(panelName) {
-            // Hide all panels
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-            
-            // Show selected panel
-            document.getElementById(`${panelName}Panel`).classList.add('active');
-            
-            // Find and activate the tab
-            const tabs = document.querySelectorAll('.panel-tab');
-            const panelNames = ['notes', 'reminders', 'memory', 'history', 'message', 'help'];
-            const index = panelNames.indexOf(panelName);
-            if (index !== -1 && tabs[index]) {
-                tabs[index].classList.add('active');
-            }
+        function loadData() {
+            const s = localStorage.getItem('jarvisData');
+            if (s) data = JSON.parse(s);
         }
 
-        function renderAllPanels() {
-            renderNotes();
-            renderReminders();
-            renderMemory();
-            renderHistory();
+        function saveData() {
+            localStorage.setItem('jarvisData', JSON.stringify(data));
         }
 
-        // =====================================================
-        // NOTES
-        // =====================================================
-
-        function addNote() {
-            const input = document.getElementById('noteInput');
-            const content = input.value.trim();
-            
-            if (content) {
-                jarvisData.notes.push({
-                    id: Date.now(),
-                    content: content,
-                    timestamp: new Date().toISOString()
-                });
-                saveData();
-                renderNotes();
-                input.value = '';
-                showToast('Note saved!', 'success');
-            }
+        function updateTime() {
+            const n = new Date();
+            timeEl.textContent = n.toLocaleTimeString('en-US', {hour12: false});
+            dateEl.textContent = n.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
         }
 
-        function deleteNote(id) {
-            jarvisData.notes = jarvisData.notes.filter(n => n.id !== id);
-            saveData();
-            renderNotes();
-            showToast('Note deleted', 'warning');
-        }
-
-        function renderNotes() {
-            const container = document.getElementById('notesList');
-            
-            if (jarvisData.notes.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📝</div>
-                        <p>No notes yet. Add one above!</p>
-                    </div>`;
+        // Speech Recognition
+        function initSpeech() {
+            if (!SR) {
+                status.textContent = '❌ Speech not supported. Use text.';
                 return;
             }
-            
-            container.innerHTML = jarvisData.notes.map(note => `
-                <div class="panel-item">
-                    <button class="delete-btn" onclick="deleteNote(${note.id})">Delete</button>
-                    <div class="content">${note.content}</div>
-                    <div class="timestamp">${new Date(note.timestamp).toLocaleString()}</div>
-                </div>
-            `).reverse().join('');
-        }
+            recog = new SR();
+            recog.continuous = true;
+            recog.interimResults = true;
 
-        // =====================================================
-        // REMINDERS
-        // =====================================================
+            recog.onstart = () => {
+                listening = true;
+                reactor.classList.add('listening');
+                reactor.classList.remove('speaking');
+                wave.classList.remove('idle');
+                status.textContent = '🎤 Listening...';
+                listenBtn.classList.add('active');
+            };
 
-        function addReminder() {
-            const textInput = document.getElementById('reminderText');
-            const minsInput = document.getElementById('reminderMins');
-            
-            const content = textInput.value.trim();
-            const mins = parseInt(minsInput.value) || 5;
-            
-            if (content) {
-                jarvisData.reminders.push({
-                    id: Date.now(),
-                    content: content,
-                    time: Date.now() + (mins * 60 * 1000),
-                    triggered: false
-                });
-                saveData();
-                renderReminders();
-                textInput.value = '';
-                minsInput.value = '';
-                showToast(`Reminder set for ${mins} minutes`, 'success');
-            }
-        }
-
-        function deleteReminder(id) {
-            jarvisData.reminders = jarvisData.reminders.filter(r => r.id !== id);
-            saveData();
-            renderReminders();
-        }
-
-        function checkReminders() {
-            const now = Date.now();
-            
-            jarvisData.reminders.forEach(reminder => {
-                if (!reminder.triggered && reminder.time <= now) {
-                    reminder.triggered = true;
-                    saveData();
-                    renderReminders();
-                    
-                    // Show notification
-                    showToast(`⏰ Reminder: ${reminder.content}`, 'warning');
-                    speak(`${jarvisData.name}, this is your reminder: ${reminder.content}`, currentLang);
-                    
-                    // Browser notification
-                    if (Notification.permission === 'granted') {
-                        new Notification('JARVIS Reminder', {
-                            body: reminder.content,
-                            icon: '🤖'
-                        });
-                    }
+            recog.onresult = (e) => {
+                let final = '', interim = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    if (e.results[i].isFinal) final += e.results[i][0].transcript;
+                    else interim += e.results[i][0].transcript;
                 }
-            });
-        }
+                if (interim) status.textContent = `Hearing: "${interim}"`;
+                if (final) processCmd(final.trim());
+            };
 
-        function renderReminders() {
-            const container = document.getElementById('remindersList');
-            const activeReminders = jarvisData.reminders.filter(r => !r.triggered);
-            
-            if (activeReminders.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">⏰</div>
-                        <p>No active reminders</p>
-                    </div>`;
-                return;
-            }
-            
-            container.innerHTML = activeReminders.map(r => {
-                const timeLeft = Math.max(0, Math.round((r.time - Date.now()) / 60000));
-                return `
-                    <div class="panel-item">
-                        <button class="delete-btn" onclick="deleteReminder(${r.id})">Delete</button>
-                        <div class="content">${r.content}</div>
-                        <div class="timestamp">⏱️ ${timeLeft} minutes remaining</div>
-                    </div>
-                `;
-            }).join('');
-        }
+            recog.onend = () => {
+                listening = false;
+                reactor.classList.remove('listening');
+                wave.classList.add('idle');
+                listenBtn.classList.remove('active');
+                status.textContent = 'Say "JARVIS" or click Start';
+                if (continuous) setTimeout(() => { if (continuous) try { recog.start(); } catch(e) {} }, 100);
+            };
 
-        // =====================================================
-        // MEMORY
-        // =====================================================
-
-        function deleteMemory(id) {
-            jarvisData.memory = jarvisData.memory.filter(m => m.id !== id);
-            saveData();
-            renderMemory();
-        }
-
-        function renderMemory() {
-            const container = document.getElementById('memoryList');
-            
-            if (jarvisData.memory.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🧠</div>
-                        <p>Memory bank is empty. Tell JARVIS to remember something!</p>
-                    </div>`;
-                return;
-            }
-            
-            container.innerHTML = jarvisData.memory.map(mem => `
-                <div class="panel-item">
-                    <button class="delete-btn" onclick="deleteMemory(${mem.id})">Forget</button>
-                    <div class="content">${mem.content}</div>
-                    <div class="timestamp">${new Date(mem.timestamp).toLocaleString()}</div>
-                </div>
-            `).reverse().join('');
-        }
-
-        // =====================================================
-        // CHAT HISTORY
-        // =====================================================
-
-        function addToHistory(speaker, message) {
-            jarvisData.chatHistory.push({
-                speaker: speaker,
-                message: message,
-                timestamp: new Date().toISOString()
-            });
-            
-            // Keep only last 50 messages
-            if (jarvisData.chatHistory.length > 50) {
-                jarvisData.chatHistory = jarvisData.chatHistory.slice(-50);
-            }
-            
-            saveData();
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('chatHistory');
-            
-            if (jarvisData.chatHistory.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">💬</div>
-                        <p>No conversation history yet</p>
-                    </div>`;
-                return;
-            }
-            
-            container.innerHTML = jarvisData.chatHistory.map(chat => `
-                <div class="chat-bubble ${chat.speaker}">
-                    <div class="speaker">${chat.speaker === 'user' ? '👤 You' : '🤖 JARVIS'}</div>
-                    <div class="content">${chat.message}</div>
-                </div>
-            `).join('');
-            
-            // Scroll to bottom
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // =====================================================
-        // MESSAGING
-        // =====================================================
-
-        function sendWhatsApp() {
-            const phone = document.getElementById('phoneInput').value.replace(/\D/g, '');
-            const message = document.getElementById('messageInput').value;
-            
-            if (!phone) {
-                showToast('Please enter phone number', 'error');
-                return;
-            }
-            
-            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank');
-            showToast('Opening WhatsApp...', 'success');
-        }
-
-        function sendSMS() {
-            const phone = document.getElementById('phoneInput').value;
-            const message = document.getElementById('messageInput').value;
-            
-            if (!phone) {
-                showToast('Please enter phone number', 'error');
-                return;
-            }
-            
-            window.open(`sms:${phone}?body=${encodeURIComponent(message)}`, '_blank');
-            showToast('Opening SMS...', 'success');
-        }
-
-        function sendEmail() {
-            const message = document.getElementById('messageInput').value;
-            window.open(`mailto:?body=${encodeURIComponent(message)}`, '_blank');
-            showToast('Opening Email...', 'success');
-        }
-
-        // =====================================================
-        // CAMERA
-        // =====================================================
-
-        async function openCamera() {
-            const section = document.getElementById('cameraSection');
-            const video = document.getElementById('cameraFeed');
-            
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' }
-                });
-                video.srcObject = cameraStream;
-                section.classList.add('active');
-                showToast('Camera opened!', 'success');
-            } catch (e) {
-                showToast('Camera access denied!', 'error');
-                speak(`I couldn't access the camera, ${jarvisData.name}. Please allow camera permissions.`, currentLang);
-            }
-        }
-
-        function capturePhoto() {
-            const video = document.getElementById('cameraFeed');
-            const img = document.getElementById('capturedPhoto');
-            const canvas = document.createElement('canvas');
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            capturedImageData = canvas.toDataURL('image/png');
-            img.src = capturedImageData;
-            img.style.display = 'block';
-            
-            showToast('Photo captured!', 'success');
-            speak(`Photo captured, ${jarvisData.name}.`, currentLang);
-        }
-
-        function downloadPhoto() {
-            if (!capturedImageData) {
-                showToast('Capture a photo first!', 'warning');
-                return;
-            }
-            
-            const link = document.createElement('a');
-            link.download = `jarvis-photo-${Date.now()}.png`;
-            link.href = capturedImageData;
-            link.click();
-            showToast('Photo downloaded!', 'success');
-        }
-
-        function saveToGallery() {
-            if (!capturedImageData) {
-                showToast('Capture a photo first!', 'warning');
-                return;
-            }
-            
-            // Save to localStorage (limited storage)
-            let gallery = JSON.parse(localStorage.getItem('jarvisGallery') || '[]');
-            gallery.push({
-                id: Date.now(),
-                image: capturedImageData,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('jarvisGallery', JSON.stringify(gallery));
-            
-            showToast('Saved to gallery!', 'success');
-        }
-
-        function closeCamera() {
-            const section = document.getElementById('cameraSection');
-            const video = document.getElementById('cameraFeed');
-            const img = document.getElementById('capturedPhoto');
-            
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-            
-            video.srcObject = null;
-            img.style.display = 'none';
-            section.classList.remove('active');
-            capturedImageData = null;
-        }
-
-        // =====================================================
-        // NOTIFICATIONS
-        // =====================================================
-
-        function requestNotifications() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-
-        // =====================================================
-        // INITIALIZE ON PAGE LOAD
-        // =====================================================
-
-        // Wait for voices to load
-        if (synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = () => {
-                console.log('Voices loaded:', synth.getVoices().length);
+            recog.onerror = (e) => {
+                if (e.error === 'not-allowed') status.textContent = '❌ Microphone denied!';
             };
         }
 
-        // Start JARVIS
-        initialize();
+        function startListening() {
+            if (recog && !listening) {
+                continuous = true;
+                recog.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+                try { recog.start(); } catch(e) {}
+            }
+        }
+
+        function stopListening() {
+            continuous = false;
+            if (recog && listening) recog.stop();
+        }
+
+        // Speech Synthesis
+        function speak(text) {
+            synth.cancel();
+            lastResp = text;
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.9;
+            u.pitch = 1;
+            
+            const voices = synth.getVoices();
+            const v = lang === 'hi' 
+                ? voices.find(x => x.lang.includes('hi'))
+                : voices.find(x => x.name.includes('Google UK English Male')) || voices.find(x => x.lang === 'en-GB') || voices.find(x => x.lang.startsWith('en'));
+            if (v) u.voice = v;
+
+            u.onstart = () => {
+                reactor.classList.add('speaking');
+                reactor.classList.remove('listening');
+                wave.classList.remove('idle');
+            };
+            u.onend = () => {
+                reactor.classList.remove('speaking');
+                wave.classList.add('idle');
+            };
+            synth.speak(u);
+        }
+
+        function repeatLast() { if (lastResp) speak(lastResp); }
+
+        function setLang(l) {
+            lang = l;
+            document.getElementById('enBtn').classList.toggle('active', l === 'en');
+            document.getElementById('hiBtn').classList.toggle('active', l === 'hi');
+            showToast(l === 'hi' ? 'भाषा: हिंदी' : 'Language: English', 'success');
+        }
+
+        function respond(text) {
+            response.textContent = '';
+            let i = 0;
+            const iv = setInterval(() => {
+                if (i < text.length) { response.textContent += text.charAt(i); i++; }
+                else clearInterval(iv);
+            }, 15);
+            speak(text);
+        }
+
+        // Command Processing
+        function processCmd(input) {
+            status.textContent = `You said: "${input}"`;
+            let cmd = input.toLowerCase().replace(/jarvis|jarwis|जार्विस/gi, '').trim();
+            
+            const isHi = /[\u0900-\u097F]/.test(cmd) || cmd.includes('kya') || cmd.includes('karo');
+            const name = data.name;
+
+            if (!cmd || cmd.length < 2) {
+                respond(isHi ? `जी ${name}? मैं आपकी क्या सेवा करूं?` : `Yes, ${name}? How may I assist you?`);
+                return;
+            }
+
+            // Greetings
+            if (match(cmd, ['hello','hi','hey','good morning','good evening','नमस्ते','हेलो'])) {
+                respond(isHi ? `नमस्ते ${name}! मैं आपकी सेवा में हूं।` : `Hello, ${name}! How may I assist you today?`);
+            }
+            // Time
+            else if (match(cmd, ['what time','time is it','समय क्या','टाइम'])) {
+                const t = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'numeric', hour12:true});
+                respond(isHi ? `${name}, समय है ${t}।` : `The time is ${t}, ${name}.`);
+            }
+            // Date
+            else if (match(cmd, ['what date','today','आज क्या','तारीख'])) {
+                const d = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+                respond(isHi ? `${name}, आज ${d} है।` : `Today is ${d}, ${name}.`);
+            }
+            // Websites
+            else if (match(cmd, ['open youtube','यूट्यूब'])) { respond(isHi ? `यूट्यूब खोल रहा हूं।` : `Opening YouTube, ${name}.`); setTimeout(() => window.open('https://youtube.com','_blank'), 1500); }
+            else if (match(cmd, ['open google','गूगल'])) { respond(isHi ? `गूगल खोल रहा हूं।` : `Opening Google, ${name}.`); setTimeout(() => window.open('https://google.com','_blank'), 1500); }
+            else if (match(cmd, ['open instagram','इंस्टाग्राम'])) { respond(`Opening Instagram, ${name}.`); setTimeout(() => window.open('https://instagram.com','_blank'), 1500); }
+            else if (match(cmd, ['open facebook','फेसबुक'])) { respond(`Opening Facebook, ${name}.`); setTimeout(() => window.open('https://facebook.com','_blank'), 1500); }
+            else if (match(cmd, ['open twitter','ट्विटर'])) { respond(`Opening Twitter, ${name}.`); setTimeout(() => window.open('https://twitter.com','_blank'), 1500); }
+            else if (match(cmd, ['open whatsapp','व्हाट्सएप'])) { respond(`Opening WhatsApp, ${name}.`); setTimeout(() => window.open('https://web.whatsapp.com','_blank'), 1500); }
+            else if (match(cmd, ['open netflix'])) { respond(`Opening Netflix, ${name}.`); setTimeout(() => window.open('https://netflix.com','_blank'), 1500); }
+            else if (match(cmd, ['open spotify'])) { respond(`Opening Spotify, ${name}.`); setTimeout(() => window.open('https://spotify.com','_blank'), 1500); }
+            else if (match(cmd, ['open amazon'])) { respond(`Opening Amazon, ${name}.`); setTimeout(() => window.open('https://amazon.com','_blank'), 1500); }
+            else if (match(cmd, ['open gmail','email'])) { respond(`Opening Gmail, ${name}.`); setTimeout(() => window.open('https://mail.google.com','_blank'), 1500); }
+            else if (match(cmd, ['open chatgpt','chat gpt'])) { respond(`Opening ChatGPT, ${name}.`); setTimeout(() => window.open('https://chat.openai.com','_blank'), 1500); }
+            else if (cmd.startsWith('open ')) {
+                const site = cmd.replace('open ','').trim();
+                respond(`Opening ${site}, ${name}.`);
+                setTimeout(() => window.open(`https://www.${site}.com`,'_blank'), 1500);
+            }
+            // Search
+            else if (match(cmd, ['search for','search','google','खोजो'])) {
+                const q = cmd.replace(/search for|search|google|खोजो/gi,'').trim();
+                if (q) { respond(`Searching for "${q}".`); setTimeout(() => window.open(`https://google.com/search?q=${encodeURIComponent(q)}`,'_blank'), 1500); }
+                else respond(`What should I search for, ${name}?`);
+            }
+            // Notes
+            else if (match(cmd, ['save note','add note','नोट सेव','नोट लिखो'])) {
+                const n = cmd.replace(/save note|add note|नोट सेव करो|नोट लिखो/gi,'').trim();
+                if (n) { data.notes.push({id:Date.now(), content:n, time:new Date().toISOString()}); saveData(); renderNotes(); respond(isHi ? `नोट सेव हो गया।` : `Note saved, ${name}.`); }
+                else respond(`What should I note, ${name}?`);
+            }
+            else if (match(cmd, ['show notes','my notes','नोट्स दिखाओ'])) {
+                showTab('notes');
+                respond(`You have ${data.notes.length} notes, ${name}.`);
+            }
+            // Reminders
+            else if (match(cmd, ['remind me','set reminder','याद दिलाओ'])) {
+                const tm = cmd.match(/in (\d+) (minute|minutes|min)/i);
+                const tk = cmd.match(/to (.+)/i);
+                if (tm) {
+                    const mins = parseInt(tm[1]);
+                    const task = tk ? tk[1] : 'Reminder';
+                    data.reminders.push({id:Date.now(), content:task, time:Date.now()+(mins*60000), done:false});
+                    saveData(); renderReminders();
+                    respond(`I'll remind you in ${mins} minutes, ${name}.`);
+                } else {
+                    showTab('reminders');
+                    respond(`Set reminder from the panel, ${name}.`);
+                }
+            }
+            // Memory
+            else if (match(cmd, ['remember that','remember my','याद रखो'])) {
+                const m = cmd.replace(/remember that|remember my|याद रखो/gi,'').trim();
+                if (m) { data.memory.push({id:Date.now(), content:m, time:new Date().toISOString()}); saveData(); renderMemory(); respond(isHi ? `याद रख लिया।` : `I'll remember that, ${name}.`); }
+            }
+            else if (match(cmd, ['what do you remember','show memory','क्या याद है'])) {
+                showTab('memory');
+                respond(data.memory.length ? `I remember ${data.memory.length} things.` : `Memory is empty, ${name}.`);
+            }
+            // Jokes
+            else if (match(cmd, ['joke','make me laugh','जोक','हंसाओ'])) {
+                const jokes = isHi ? [
+                    `${name}, टीचर ने पूछा "देश का नाम बताओ जो A से शुरू हो" - बच्चा: "आंध्र प्रदेश!" - टीचर बेहोश!`,
+                    `${name}, पत्नी: शादी से पहले तुम मुझे चांद कहते थे! पति: हां, पर अब पता चला चांद पर भी दाग होते हैं!`
+                ] : [
+                    `Why don't scientists trust atoms? Because they make up everything, ${name}!`,
+                    `Why did the developer go broke? He used up all his cache, ${name}!`,
+                    `A SQL query walks into a bar and asks two tables: Can I join you? ${name}!`
+                ];
+                respond(jokes[Math.floor(Math.random()*jokes.length)]);
+            }
+            // Motivation
+            else if (match(cmd, ['motivate','inspire','मोटिवेट'])) {
+                const quotes = isHi ? [
+                    `${name}, हार मत मानो। हर सफल इंसान ने संघर्ष किया है।`,
+                    `${name}, जो लोग कहते हैं नहीं हो सकता, उन्हें गलत साबित करो।`
+                ] : [
+                    `${name}, success is not final, failure is not fatal. It's the courage to continue that counts.`,
+                    `The only way to do great work is to love what you do, ${name}.`,
+                    `Believe in yourself, ${name}. You have unlimited potential.`
+                ];
+                respond(quotes[Math.floor(Math.random()*quotes.length)]);
+            }
+            // Calculate
+            else if (match(cmd, ['calculate','what is','solve'])) {
+                const expr = cmd.replace(/calculate|what is|solve/gi,'').trim().replace(/[^0-9+\-*/().]/g,'');
+                try { if (expr) respond(`The answer is ${eval(expr)}, ${name}.`); else respond(`Give me a math problem, ${name}.`); }
+                catch { respond(`Couldn't calculate that, ${name}.`); }
+            }
+            // Weather
+            else if (match(cmd, ['weather','मौसम'])) {
+                respond(`Opening weather, ${name}.`);
+                setTimeout(() => window.open('https://google.com/search?q=weather','_blank'), 1500);
+            }
+            // Personal
+            else if (match(cmd, ['how are you','कैसे हो'])) {
+                respond(isHi ? `मैं बिल्कुल ठीक हूं, ${name}। आपकी सेवा में हाज़िर।` : `I'm functioning perfectly, ${name}. All systems operational.`);
+            }
+            else if (match(cmd, ['who are you','तुम कौन'])) {
+                respond(isHi ? `मैं जार्विस हूं, ${name}। आपका AI सहायक।` : `I am JARVIS, ${name}. Just A Rather Very Intelligent System. Your personal AI assistant.`);
+            }
+            else if (match(cmd, ['thank','धन्यवाद','शुक्रिया'])) {
+                respond(isHi ? `आपका स्वागत है, ${name}।` : `You're welcome, ${name}. Happy to help.`);
+            }
+            else if (match(cmd, ['my name is','call me','मेरा नाम'])) {
+                const nm = cmd.replace(/my name is|call me|मेरा नाम है/gi,'').trim();
+                if (nm) { data.name = nm; saveData(); respond(`Nice to meet you, ${nm}!`); }
+            }
+            else if (match(cmd, ['good night','bye','शुभ रात्रि'])) {
+                respond(isHi ? `शुभ रात्रि, ${name}। आराम करें।` : `Good night, ${name}. Rest well.`);
+            }
+            else if (match(cmd, ['shutdown','बंद हो जाओ'])) {
+                respond(`Shutting down, ${name}. Goodbye.`);
+                setTimeout(() => { document.body.style.opacity = '0'; setTimeout(() => { document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:#004466;font-family:sans-serif;">JARVIS OFFLINE - Refresh to restart</div>'; }, 2000); }, 2000);
+            }
+            // Default
+            else {
+                respond(isHi ? `${name}, मुझे समझ नहीं आया। कृपया दोबारा बताएं।` : `I'm not sure about "${cmd}", ${name}. Could you rephrase?`);
+            }
+        }
+
+        function match(cmd, arr) { return arr.some(k => cmd.includes(k)); }
+        function runCmd(c) { processCmd(c); }
+        function sendCmd() { const c = textInput.value.trim(); if (c) { processCmd(c); textInput.value = ''; } }
+
+        // Toast
+        function showToast(msg, type='') {
+            toast.textContent = msg;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Tabs
+        function showTab(name) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(name + 'Panel').classList.add('active');
+            const tabs = ['notes','reminders','memory','help'];
+            document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
+        }
+
+        function renderAll() { renderNotes(); renderReminders(); renderMemory(); }
+
+        // Notes
+        function addNote() {
+            const v = document.getElementById('noteIn').value.trim();
+            if (v) { data.notes.push({id:Date.now(), content:v, time:new Date().toISOString()}); saveData(); renderNotes(); document.getElementById('noteIn').value = ''; showToast('Note saved!','success'); }
+        }
+        function delNote(id) { data.notes = data.notes.filter(n => n.id !== id); saveData(); renderNotes(); }
+        function renderNotes() {
+            const c = document.getElementById('notesList');
+            if (!data.notes.length) { c.innerHTML = '<div class="empty">No notes yet</div>'; return; }
+            c.innerHTML = data.notes.map(n => `<div class="item"><button class="del-btn" onclick="delNote(${n.id})">Delete</button><div class="content">${n.content}</div><div class="time">${new Date(n.time).toLocaleString()}</div></div>`).reverse().join('');
+        }
+
+        // Reminders
+        function addReminder() {
+            const t = document.getElementById('remIn').value.trim();
+            const m = parseInt(document.getElementById('remMins').value) || 5;
+            if (t) { data.reminders.push({id:Date.now(), content:t, time:Date.now()+(m*60000), done:false}); saveData(); renderReminders(); document.getElementById('remIn').value = ''; document.getElementById('remMins').value = ''; showToast(`Reminder set for ${m} min`,'success'); }
+        }
+        function delRem(id) { data.reminders = data.reminders.filter(r => r.id !== id); saveData(); renderReminders(); }
+        function checkReminders() {
+            const now = Date.now();
+            data.reminders.forEach(r => {
+                if (!r.done && r.time <= now) {
+                    r.done = true; saveData(); renderReminders();
+                    showToast(`⏰ ${r.content}`, 'warning');
+                    speak(`${data.name}, reminder: ${r.content}`);
+                }
+            });
+        }
+        function renderReminders() {
+            const c = document.getElementById('remList');
+            const active = data.reminders.filter(r => !r.done);
+            if (!active.length) { c.innerHTML = '<div class="empty">No reminders</div>'; return; }
+            c.innerHTML = active.map(r => {
+                const left = Math.max(0, Math.round((r.time - Date.now()) / 60000));
+                return `<div class="item"><button class="del-btn" onclick="delRem(${r.id})">Delete</button><div class="content">${r.content}</div><div class="time">⏱️ ${left} min left</div></div>`;
+            }).join('');
+        }
+
+        // Memory
+        function delMem(id) { data.memory = data.memory.filter(m => m.id !== id); saveData(); renderMemory(); }
+        function renderMemory() {
+            const c = document.getElementById('memList');
+            if (!data.memory.length) { c.innerHTML = '<div class="empty">Memory empty</div>'; return; }
+            c.innerHTML = data.memory.map(m => `<div class="item"><button class="del-btn" onclick="delMem(${m.id})">Forget</button><div class="content">${m.content}</div><div class="time">${new Date(m.time).toLocaleString()}</div></div>`).reverse().join('');
+        }
+
+        // Start
+        init();
     </script>
 </body>
 </html>
